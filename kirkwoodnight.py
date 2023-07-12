@@ -270,7 +270,7 @@ def sim_kirkwood_obs(date = str(date.today()), start_time = str(datetime.datetim
     print("Generating files...")
 
     if ids == "":
-        ids = list(range(1, len(target_df) + 1))
+        ids = list(range(1, display_N + 1))
     else:
         ids = ids.split(","); ids = [int(i) for i in ids]
     
