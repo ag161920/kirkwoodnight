@@ -64,10 +64,6 @@ This code is a work in progress, so comments are welcome and encouraged! Any sug
   - Jessica Ranshaw (jranshaw@iu.edu)
   - Xian-Yu Wang (xwa5@iu.edu)
 
-See also the list of
-[contributors](https://github.com/PurpleBooth/a-good-readme-template/contributors)
-who participated in this project.
-
 ## License
 
 This project is distributed under the MIT License - see the [LICENSE.txt](LICENSE.txt) file for further
