@@ -47,7 +47,7 @@ A series of prompts will then be displayed requesting the user to input the desi
 
 Finally, the user will be asked the number of objects they would like displayed in the output tables. Since these objects are sorted by observability, the tables returned will represent the objects that present the best combination of visibility and brightness. The output tables will contain relevant information about these objects, as well as observability over the course of the night:
 
-![Screenshot](screenshot.png)
+![Example output tables.](kirkwood_example_output.png)
 
 The user will then be requested to input the ID numbers (second column, not the names!) of the objects they are most interested in. For each object, a text file will be generated containing characteristic information as well as an observing schedule (with Alt/Az sky positions) for the night. 
 
