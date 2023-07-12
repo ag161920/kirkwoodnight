@@ -14,12 +14,15 @@ setup(
     # Metadata
     author="Your Name",
     author_email="your-email@example.com",
-    description="A short description of your project",
+    description="kirkwoodnight allows you to plan your Kirkwood observations in just minutes!",
     long_description=open('README.md').read(),
     long_description_content_type="text/markdown",
     url="Link to your project",
     classifiers=[
-        "License :: OSI Approved :: Python Software Foundation License"
+        "Intended Audience :: Science/Research",
+        "Topic :: Scientific/Engineering :: Astronomy",
+        "License :: OSI Approved :: Python Software Foundation License",
+        "Programming Language :: Python :: 3.10",
     ],
 
     # Specify console scripts
