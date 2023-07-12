@@ -339,13 +339,13 @@ def sim_kirkwood_obs(date = str(date.today()), start_time = str(datetime.datetim
 
     return target_df, time_df
 
-def_l = [str(date.today()), str(datetime.datetime.now().time()), 4, 10, 80, 5, None, None, None, 0.5]
+def_l = [str(date.today()), str(datetime.datetime.now().time()), 4, 20, 85, 5, None, None, None, 0.5]
 
 message_list = ["Which date would you like to observe on? (Enter as YYYY-MM-DD, default is today):",
                 "What time would you like to start your run? (Enter in military time as HH:MM, default is current local time):",
                 "How many hours would you like to observe for? (default is 4)",
-                "Would you like to change Kirkwood's minimum altitude limit (in degrees)? (Type value if desired, otherwise hit ENTER. Default is 10.)",
-                "Would you like to change Kirkwood's maximum altitude limit (in degrees)? (Type value if desired, otherwise hit ENTER. Default is 80.)",
+                "Would you like to change Kirkwood's minimum altitude limit (in degrees)? (Type value if desired, otherwise hit ENTER. Default is 20.)",
+                "Would you like to change Kirkwood's maximum altitude limit (in degrees)? (Type value if desired, otherwise hit ENTER. Default is 85.)",
                 "Would you like to change the minimum mandated distance (in degrees) from the Moon? (Type value if desired, otherwise hit ENTER. Default is 5.)",
                 "Would you like to specify a maximum allowed airmass? (Type value if desired, otherwise hit ENTER. Default is None.)",
                 "Would you like to specify a desired level of darkness for the night? (If desired, type 'civ' or 'naut' or 'astro' to respectively signify civil, nautical, or astronomical twilight. Otherwise hit ENTER. Default is None.)",
