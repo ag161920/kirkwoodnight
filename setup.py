@@ -8,21 +8,19 @@ def get_requires():
 
 setup(
     name="kirkwoodnight",
-    version="0.1",
+    version="0.2",
     packages=find_packages(),
 
     # Metadata
-    author="Your Name",
-    author_email="your-email@example.com",
-    description="kirkwoodnight allows you to plan your Kirkwood observations in just minutes!",
+    author="Armaan Goyal, Brandon Radzom, Jessica Ranshaw, Xian-Yu Wang",
+    author_email="armgoyal@iu.edu, bradzom@iu.edu, jranshaw@iu.edu, xwa5@iu.edu",
+    description="Interactive command line tool to assist with observations at Kirkwood Observatory.",
     long_description=open('README.md').read(),
     long_description_content_type="text/markdown",
-    url="Link to your project",
+    url="http://packages.python.org/kirkwoodnight",
+    license_files = ('LICENSE.txt',),
     classifiers=[
-        "Intended Audience :: Science/Research",
-        "Topic :: Scientific/Engineering :: Astronomy",
-        "License :: OSI Approved :: Python Software Foundation License",
-        "Programming Language :: Python :: 3.10",
+        "License :: OSI Approved :: MIT License"
     ],
 
     # Specify console scripts
