@@ -1,4 +1,4 @@
-# version 0.14
+# version 0.24
 
 # basic imports
 import os
@@ -14,13 +14,6 @@ from datetime import date
 from tabulate import tabulate
 from colorama import Fore
 
-# skyfield (for locations of solar system objects)
-import skyfield
-import skyfield
-from skyfield.api import load
-from skyfield.api import position_of_radec, load_constellation_map, load_constellation_names
-from skyfield.magnitudelib import planetary_magnitude
-
 # astropy (coordinates, units, date/time functionality)
 from astropy.coordinates import SkyCoord
 import astropy.units as u
@@ -28,42 +21,11 @@ from astropy.table import Table
 from astropy.time import Time
 from astropy.time import TimeDelta
 
-# astroplan
-import astroplan
-from astroplan import FixedTarget
-from astropy.table import QTable
-from astroplan.utils import time_grid_from_range
-from astroplan import Observer
-from astroplan import (AltitudeConstraint, AirmassConstraint,
-                       AtNightConstraint, MoonIlluminationConstraint, MoonSeparationConstraint)
-
-def make_planet_table(date_str):
-    # basic imports
-import os
-import numpy as np
-import pandas as pd
-
-# date/time functionality
-import datetime
-from datetime import date
-
-# color and visualization
-from tabulate import tabulate
-from colorama import Fore
-
 # skyfield (for locations of solar system objects)
-import skyfield
 import skyfield
 from skyfield.api import load
 from skyfield.api import position_of_radec, load_constellation_map, load_constellation_names
 from skyfield.magnitudelib import planetary_magnitude
-
-# astropy (coordinates, units, date/time functionality)
-from astropy.coordinates import SkyCoord
-import astropy.units as u
-from astropy.table import Table
-from astropy.time import Time
-from astropy.time import TimeDelta
 
 # astroplan
 import astroplan
@@ -124,13 +86,13 @@ def make_planet_table(date_str):
     return df
 
 
-def make_constraints(alt_lim = (10, 80), moon_sep = 5, max_airmass = None, night_type = None, moon_illum = None):
+def make_constraints(alt_lim = (10, 85), moon_sep = 5, max_airmass = None, night_type = None, moon_illum = None):
     '''Make Constraints
 
     Creates list of desired observational constraints for use in sim_kirkwood_obs. Intended only as a helper function.
     
     Args: (to be called in sim_kirkwood_obs, if needed)
-        alt_lim (tuple): Lower and upper bounds (in deg) on allowable altitude of telescope, default is (20, 80)
+        alt_lim (tuple): Lower and upper bounds (in deg) on allowable altitude of telescope, default is (20, 85)
         moon_sep (float): Minimum angular separation (in deg) from moon, default is 5
         max_airmass (float, optional): Maximum allowable airmass
         night_type (str, optional): Defines beginning and end of night, options are "civil", "naut", and "astro" respectively for "civilian", "nautical", and "astronomical" definitions of twilight
@@ -199,7 +161,7 @@ def make_obs_grid(kirkwood, constraints, targets, t1_ust, t2_ust, dt = 0.5):
 
 
 def sim_kirkwood_obs(date = str(date.today()), start_time = str(datetime.datetime.now().time()), duration = 4,
-                        alt_lim = (10, 80), moon_sep = 5, max_airmass = None, night_type = None, moon_illum = None, dt = 0.5):
+                        alt_lim = (10, 85), moon_sep = 5, max_airmass = None, night_type = None, moon_illum = None, dt = 0.5):
     '''Simulate Kirkwood Observation
 
     Given date, time, and duration of an observing run (with optional observational constraints),
@@ -291,7 +253,7 @@ def sim_kirkwood_obs(date = str(date.today()), start_time = str(datetime.datetim
 
 
     # user input for which object IDs they want to observe
-    print("Please enter the IDs of the objects you would like to observe, separated by commas. Hit ENTER to observe all listed objects.")
+    print("Please enter the IDs (integers) of the objects you would like to observe, separated by commas. Hit ENTER to observe all listed objects.")
 
     ids = input()
 
@@ -337,9 +299,12 @@ def sim_kirkwood_obs(date = str(date.today()), start_time = str(datetime.datetim
         target_time = target_time.T
         target_time.columns = ["Time", "Observable", "Alt", 'Az']
         target_time = target_time.set_index("Time") # final schedule (and alt/az) for selected object
-
+        # replace whitespace with _
+        obj = obj.replace(" ", "_")
         # write info/schedule files for each object and save
         filename = obj+"_summary.txt"
+        filename = filename.replace("__", "_") # get rid of any double underscores
+        filename = filename.replace("___", "_") # and triple underscores (should not exist)
                     
         with open(subdir + "/" + filename, 'w') as f:
             f.write(target_info.to_string() + "\n" + "\n")
@@ -366,3 +331,4 @@ def sim_kirkwood_obs(date = str(date.today()), start_time = str(datetime.datetim
     print("Log file saved in " + subdir)
 
     return target_df, time_df
+
