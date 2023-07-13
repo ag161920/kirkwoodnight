@@ -4,10 +4,6 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PyPI version](https://badge.fury.io/py/kirkwoodnight.svg)](https://badge.fury.io/py/kirkwoodnight)
 
-One Paragraph of the project description
-
-## Getting Started
-
 Interactive command line tool to assist with planning and conducting observations at Indiana University's Kirkwood Observatory. Given a desired date, time, and duration of observation, this program allows the user to toggle various observational constraints to generate an observing schedule for up to 130 objects of interest, including solar system planets, bright stars, and Messier objects. The user may then select the specific objects they would like to observe during the night, upon text files will be generated for each object containing useful information (constellation, magnitude, type of object, etc.) as well as an observing schedule with observability and sky positions (Alt, Az) tabulated at various time intervals.
 
 ### Prerequisites
@@ -45,9 +41,7 @@ A series of prompts will then be displayed requesting the user to input the desi
 - Desired brightness level for the Moon (options are "grey" or "dark"), default is None
 - How often the user wants to re-check observability (hours), default is 0.5 (every 30 minutes)
 
-Finally, the user will be asked the number of objects they would like displayed in the output tables. Since these objects are sorted by observability, the tables returned will represent the objects that present the best combination of visibility and brightness. The output tables will contain relevant information about these objects, as well as observability over the course of the night:
-
-![Example output tables.](kirkwoodnight_output_example.png)
+Finally, the user will be asked the number of objects they would like displayed in the output tables. Since these objects are sorted by observability, the tables returned will represent the objects that present the best combination of visibility and brightness. The output tables will contain relevant information about these objects, as well as observability over the course of the night.
 
 The user will then be requested to input the ID numbers (second column, not the names!) of the objects they are most interested in. For each object, a text file will be generated containing characteristic information as well as an observing schedule (with Alt/Az sky positions) for the night. 
 
