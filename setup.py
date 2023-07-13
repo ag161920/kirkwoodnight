@@ -8,7 +8,7 @@ def get_requires():
 
 setup(
     name="kirkwoodnight",
-    version="0.2",
+    version="0.13",
     packages=find_packages(),
 
     # Metadata
@@ -26,12 +26,12 @@ setup(
     # Specify console scripts
     entry_points={
         'console_scripts': [
-            'kirkwoodnight = kirkwoodnight:main',
+            'kirkwoodnight = kirkwoodnight.command_line:main',
         ],
     },
 
     # Include additional files into the package
-    package_data={'': ['obj_list.csv']},
+    package_data={'': ['data/*.csv']},
 
     install_requires= get_requires(),
 )
