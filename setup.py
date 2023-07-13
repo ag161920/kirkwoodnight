@@ -8,7 +8,7 @@ def get_requires():
 
 setup(
     name="kirkwoodnight",
-    version="0.13",
+    version="0.24",
     packages=find_packages(),
 
     # Metadata
