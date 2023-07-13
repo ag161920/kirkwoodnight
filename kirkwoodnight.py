@@ -35,11 +35,15 @@ from astroplan import (AltitudeConstraint, AirmassConstraint,
                        AtNightConstraint, MoonIlluminationConstraint, MoonSeparationConstraint)
 
 def make_planet_table(date_str):
-    '''
+    '''Make Planet Table
+
     Generates AstroPy Table with positions (RA, Dec) of solar system planets on the given date.
     
-    Input: Desired date (str, formatted as "YYYY-MM-DD")
-    Output: Table of RA/dec for each object (AstroPy Table)
+    Args:
+        date_str (str): Desired date (str, formatted as "YYYY-MM-DD")
+
+    Returns:
+        df (DataFrame): Table of RA/dec for each object (AstroPy Table)
     '''
 
     y,m,d = [int(num) for num in date_str.split("-")] # split input date into constituents
@@ -80,23 +84,20 @@ def make_planet_table(date_str):
     return df
 
 
-def make_constraints(alt_lim = (10, 80), moon_sep = 5, max_airmass = None, night_type = None, moon_illum = None):
-    '''
-    Creates list of desired observational constraints for use in sim_kirkwood_planets. Intended only as a helper function.
+def make_constraints(alt_lim = (20, 80), moon_sep = 5, max_airmass = None, night_type = None, moon_illum = None):
+'''Make Constraints
+
+    Creates list of desired observational constraints for use in sim_kirkwood_obs. Intended only as a helper function.
     
-    Inputs (to be called in sim_kirkwood_obs, if needed)
-    -----------------------------
-    alt_lim (tuple): Lower and upper bounds (in deg) on allowable altitude of telescope, default is (10, 80)
-    moon_sep (float): Minimum angular separation (in deg) from moon, default is 5
-    max_airmass (float, optional): Maximum allowable airmass
-    night_type (str, optional): Defines beginning and end of night, options are "civil", "naut", and "astro"
-                        respectively for "civilian", "nautical", and "astronomical" definitions of twilight
-    moon_illum (str, optional): Allowable moon phase, options are "grey" and "dark"
+    Args: (to be called in sim_kirkwood_obs, if needed)
+        alt_lim (tuple): Lower and upper bounds (in deg) on allowable altitude of telescope, default is (20, 80)
+        moon_sep (float): Minimum angular separation (in deg) from moon, default is 5
+        max_airmass (float, optional): Maximum allowable airmass
+        night_type (str, optional): Defines beginning and end of night, options are "civil", "naut", and "astro" respectively for "civilian", "nautical", and "astronomical" definitions of twilight
+        moon_illum (str, optional): Allowable moon phase, options are "grey" and "dark"
     
-    
-    Output
-    ---------------------------
-    List of observational constraints (List of Astroplan objects)
+    Returns:
+        constraints (list): List of observational constraints (List of Astroplan objects)
     '''
     
     constraints = [AltitudeConstraint(alt_lim[0]*u.deg, alt_lim[1]*u.deg), MoonSeparationConstraint(moon_sep*u.deg)]
@@ -116,31 +117,20 @@ def make_constraints(alt_lim = (10, 80), moon_sep = 5, max_airmass = None, night
     return constraints
 
 def make_obs_grid(kirkwood, constraints, targets, t1_ust, t2_ust, dt = 0.5):
-    '''
+    '''Make Observation Grid
+
     Creates grids (NumPy arrays) defining observational efficacy for each object during the desired night.
     Intended only as a helper function for sim_kirkwood_obs.
     
-    Inputs
-    -----------------------------
-    kirkwood (Astroplan Observer object): Object defining location of Kirkwood observatory.
-                                            Passed automatically from sim_kirkwood_obs, does not require user alteration.
+    Args:
+        kirkwood (Astroplan Observer object): Object defining location of Kirkwood observatory. Passed automatically from sim_kirkwood_obs, does not require user alteration.
+        constraints (list): Output from make_constraints (list of Astroplan Constraint objects). Passed automatically from sim_kirkwood_obs, does not require user alteration.
+        targets (list): List of objects definiting positions of target objects (Astroplan Target objects). Passed automatically from sim_kirkwood_obs, does not require user alteration.
+        t1_ust, t2_ust (AstroPy.Time objects): Starting and ending time of observations in Universal Standard Time. Passed autmoatically form sim_kirkwood_obs, does not require user alteration.
+        dt (float): Time interval of output observing schedule (in hours), default is 0.5 (30 mins). Can be called directly in sim_kirkwood_obs, if needed.)
     
-    constraints(list of Astroplan Constraint objects): Output from make_constraints. Passed automatically from
-                                                        sim_kirkwood_obs, does not require user alteration.
-    
-    targets (list of Astroplan Target objects): List of objects definiting positions of target objects.
-                                                Passed automatically from sim_kirkwood_obs, does not require user alteration.
-    
-    t1_ust, t2_ust (AstroPy.Time objects): Starting and ending time of observations in Universal Standard Time.
-                                            Passed autmoatically form sim_kirkwood_obs, does not require user alteration.
-    
-    dt (float): Time interval of output observing schedule (in hours), default is 0.5 (30 mins). 
-                Can be called directly in sim_kirkwood_obs, if needed.)
-    
-    Output
-    ------------------------------
-    time_grid (NumPy array): time array for observing schedule (in UST) expressed as Julian Date
-    
+    Returns:
+        time_grid (array): time array for observing schedule (in UST) expressed as Julian Date
     
     '''
     
@@ -169,31 +159,28 @@ def make_obs_grid(kirkwood, constraints, targets, t1_ust, t2_ust, dt = 0.5):
 
 
 def sim_kirkwood_obs(date = str(date.today()), start_time = str(datetime.datetime.now().time()), duration = 4,
-                        alt_lim = (10, 80), moon_sep = 5, max_airmass = None, night_type = None, moon_illum = None, dt = 0.5):
-    '''
+                        alt_lim = (20, 80), moon_sep = 5, max_airmass = None, night_type = None, moon_illum = None, dt = 0.5):
+    '''Simulate Kirkwood Observation
+
     Given date, time, and duration of an observing run (with optional observational constraints),
     prints table of object positions ranked by duration of observability, as well as rough observing schedule 
-    detailing blocks of time when each object will be observable during the run.
-
-    With user input of desired objects, saves text files with general info, sky positions, and observability for each object. 
+    detailing blocks of time when each object will be observable during the run. With user input of desired
+    objects, saves text files with general info, sky positions, and observability for each object. 
     
-    Required Inputs:
-    -----------------------------
-    date (str): desired date of observation, formatted as "YYYY-MM-DD", default is present day
-    start_time (str): desired start time of observing run (in local time zone), formatted as "HH:MM", defaults to current clock time
-    duration (float): approximate duration of observing run (in hours), defaults to 4
+    Args:
+        date (str): desired date of observation, formatted as "YYYY-MM-DD", default is present day
+        start_time (str): desired start time of observing run (in local time zone), formatted as "HH:MM", defaults to current clock time
+        duration (float): approximate duration of observing run (in hours), defaults to 4
+        alt_lim (tuple, optional): arg of make_constraints
+        moon_sep (float, optional): arg of make_constraints
+        max_airmass (float, optional): arg of make_constraints
+        night_type (str, optional): arg of make_constraints
+        moon_illum (str, optional): arg of make_constraints
+        dt (float, optional): time interval for observing grid, argument for make_obs_grid
     
-                
-    Optional (Keyword) Inputs:
-    -----------------------------
-    All constraint keyword arguments in make_constraints, as well as the dt argument for make_obs_grid.
-    
-    Output
-    ------------------------------
-    Prints table of objects, ranked by duration of observability, with positions in RA/dec and alt/az
-    Prints rough observing schedule detailing blocks of observing run when each object is observable
-    (i.e. satisfies all imposed observational constraints)
-    
+    Returns:
+        target_df (DataFrame): pandas DataFrame containing the target info for those selected for observation.
+        time_df (DataFrame): pandas DataFrame containing the target observing plans as a function of time.
     
     '''
     #print(date, start_time)
