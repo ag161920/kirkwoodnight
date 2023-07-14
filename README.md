@@ -52,13 +52,13 @@ To terminate the program at any point in time, type "exit".
 
 Following the input of the initial settings and constraints, the user will be asked for the number, type (e.g. Star), and/or subtype (e.g. Main Sequence, Red Supergiant) of objects they would like displayed in the printed tables (hitting ENTER will keep all objects). Since these objects are sorted by observability, the tables will represent the objects that present the best combination of visibility and brightness. The printed tables will contain relevant information about these objects, as well as observability over the course of the night:
 
-![Screenshot](kirkwoodnight_output_example.png)
+![Screenshot](example_output.png)
 
 The user will then be asked if they would like to generate information/schedule files for select objects in the table. If the user types "yes", they will be asked to input the ID numbers (second column, not the names!) of the objects they are most interested in. For each object, a text file will be generated containing characteristic information as well as an observing schedule (with Alt/Az sky positions) for the night. 
 
 The user will then have the option to generate star charts illustrating the sky positions of the selected objects at each block of the observing schedule:
 
-![Screenshot](kirkwoodnight_output_example.png)
+![Screenshot](example_star_chart.png)
 
 Finally, the user will be asked if they wish to save a log file describing the parameters and constraints used for the run.
 
