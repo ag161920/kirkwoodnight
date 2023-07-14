@@ -2,6 +2,7 @@
 
 [![A rectangular badge, half black half purple containing the text made at Code Astro](https://img.shields.io/badge/Made%20at-Code/Astro-blueviolet.svg)](https://semaphorep.github.io/codeastro/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![PyPI version](https://badge.fury.io/py/kirkwoodnight.svg)](https://badge.fury.io/py/kirkwoodnight)
 
 Interactive command line tool to assist with planning and conducting observations at Indiana University's Kirkwood Observatory. Given a desired date, time, and duration of observation, this program allows the user to toggle various observational constraints to generate an observing schedule for over 100 objects of interest, including solar system planets, bright stars, and Messier objects. The user may then select specific objects (or types of objects) they would like to observe during the night, upon which the program will generate a file for each object containing characteristic information (constellation, magnitude, type of object, etc.) as well as an observing schedule with sky positions (Alt, Az) tabulated at various time intervals. The user also has the option of generating star charts for these selected objects at each interval of the observing schedule.
 
@@ -50,7 +51,7 @@ To terminate the program at any point in time, type "exit".
 
 Following the input of the initial settings and constraints, the user will be asked for the number, type (e.g. Star), and/or subtype (e.g. Main Sequence, Red Supergiant) of objects they would like displayed in the printed tables (hitting ENTER will keep all objects). Since these objects are sorted by observability, the tables will represent the objects that present the best combination of visibility and brightness. The printed tables will contain relevant information about these objects, as well as observability over the course of the night.
 
-The user will then be asked if they would like to generate information/schedule files for select objects in the table. If the use types "yes", they will be asked to input the ID numbers (second column, not the names!) of the objects they are most interested in. For each object, a text file will be generated containing characteristic information as well as an observing schedule (with Alt/Az sky positions) for the night. 
+The user will then be asked if they would like to generate information/schedule files for select objects in the table. If the user types "yes", they will be asked to input the ID numbers (second column, not the names!) of the objects they are most interested in. For each object, a text file will be generated containing characteristic information as well as an observing schedule (with Alt/Az sky positions) for the night. 
 
 The user will then have the option to generate star charts illustrating the sky positions of the selected objects at each block of the observing schedule.
 
