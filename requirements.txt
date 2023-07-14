@@ -5,3 +5,4 @@ colorama
 skyfield
 astropy
 astroplan
+matplotlib
