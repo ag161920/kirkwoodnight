@@ -225,9 +225,9 @@ def sim_kirkwood_obs(date = str(date.today()), start_time = str(datetime.datetim
     target_df = target_df.set_index("Name")
     target_df["V Mag"] = target_df["V Mag"].astype(float)
     target_names_all = list(target_df.index)
+    target_df.insert(0, "ID", range(1, len(target_df) + 1))
     target_df = target_df.sort_values(by=['Obs. Frac.', "V Mag"], ascending = [False, True]) # sort table by observability and brightness
     target_df = target_df.round(2)
-    target_df.insert(0, "ID", range(1, len(target_df) + 1))
 
     types = list(set(target_df["Type"]))
     types = [" " + item for item in types]
