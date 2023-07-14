@@ -1,6 +1,7 @@
-# version 0.24
+# version 0.14
 
-# basic imports
+# basic importsl 
+import sys
 import os
 import numpy as np
 import pandas as pd
@@ -14,18 +15,18 @@ from datetime import date
 from tabulate import tabulate
 from colorama import Fore
 
+# skyfield (for locations of solar system objects)
+import skyfield
+from skyfield.api import load
+from skyfield.api import position_of_radec, load_constellation_map, load_constellation_names
+from skyfield.magnitudelib import planetary_magnitude
+
 # astropy (coordinates, units, date/time functionality)
 from astropy.coordinates import SkyCoord
 import astropy.units as u
 from astropy.table import Table
 from astropy.time import Time
 from astropy.time import TimeDelta
-
-# skyfield (for locations of solar system objects)
-import skyfield
-from skyfield.api import load
-from skyfield.api import position_of_radec, load_constellation_map, load_constellation_names
-from skyfield.magnitudelib import planetary_magnitude
 
 # astroplan
 import astroplan
@@ -35,6 +36,9 @@ from astroplan.utils import time_grid_from_range
 from astroplan import Observer
 from astroplan import (AltitudeConstraint, AirmassConstraint,
                        AtNightConstraint, MoonIlluminationConstraint, MoonSeparationConstraint)
+
+# kirkwoodnight
+from kirkwoodnight import plotting
 
 def make_planet_table(date_str):
     '''Make Planet Table
@@ -61,6 +65,7 @@ def make_planet_table(date_str):
     pl_l = ["mercury", "venus", "mars", "jupiter barycenter", "saturn barycenter", "uranus barycenter", "neptune barycenter"]
     pl_names = ["Mercury", "Venus", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune"]
     type_l = ["Planet"]*len(pl_names)
+    subtype_l = ["Terrestrial", "Terrestrial", "Terrestrial", "GasGiant", "GasGiant", "IceGiant", "IceGiant"]
     mag_l = []
     ra_l = []
     dec_l = []
@@ -82,17 +87,17 @@ def make_planet_table(date_str):
     const_l = [const_name_dict[abbrev] for abbrev in const_abbrev]
         
     # return pandas dataframe with info for planets
-    df = pd.DataFrame({"Name": pl_names, "RA": ra_l, "Dec": dec_l, "Type": type_l, "Constellation": const_l, "Magnitude": mag_l})
+    df = pd.DataFrame({"Name": pl_names, "RA": ra_l, "Dec": dec_l, "Type": type_l, "Subtype": subtype_l, "Constellation": const_l, "V Mag": mag_l})
     return df
 
 
-def make_constraints(alt_lim = (10, 85), moon_sep = 5, max_airmass = None, night_type = None, moon_illum = None):
+def make_constraints(alt_lim = (10, 80), moon_sep = 5, max_airmass = None, night_type = None, moon_illum = None):
     '''Make Constraints
 
     Creates list of desired observational constraints for use in sim_kirkwood_obs. Intended only as a helper function.
     
     Args: (to be called in sim_kirkwood_obs, if needed)
-        alt_lim (tuple): Lower and upper bounds (in deg) on allowable altitude of telescope, default is (20, 85)
+        alt_lim (tuple): Lower and upper bounds (in deg) on allowable altitude of telescope, default is (20, 80)
         moon_sep (float): Minimum angular separation (in deg) from moon, default is 5
         max_airmass (float, optional): Maximum allowable airmass
         night_type (str, optional): Defines beginning and end of night, options are "civil", "naut", and "astro" respectively for "civilian", "nautical", and "astronomical" definitions of twilight
@@ -161,7 +166,7 @@ def make_obs_grid(kirkwood, constraints, targets, t1_ust, t2_ust, dt = 0.5):
 
 
 def sim_kirkwood_obs(date = str(date.today()), start_time = str(datetime.datetime.now().time()), duration = 4,
-                        alt_lim = (10, 85), moon_sep = 5, max_airmass = None, night_type = None, moon_illum = None, dt = 0.5):
+                        alt_lim = (10, 80), moon_sep = 5, max_airmass = None, night_type = None, moon_illum = None, dt = 0.5):
     '''Simulate Kirkwood Observation
 
     Given date, time, and duration of an observing run (with optional observational constraints),
@@ -218,17 +223,50 @@ def sim_kirkwood_obs(date = str(date.today()), start_time = str(datetime.datetim
     # build dataframe of all targets, add column for observability fraction
     target_df["Obs. Frac."] = obs_percent
     target_df = target_df.set_index("Name")
-    target_df["Magnitude"] = target_df["Magnitude"].astype(float)
-    target_names_ordered = list(target_df.index) # save ordered list of target names, this is needed for later bookkeeping
-    target_df = target_df.sort_values(by=['Obs. Frac.', "Magnitude"], ascending = [False, True]) # sort table by observability and brightness
-    target_df = target_df.round(2) 
+    target_df["V Mag"] = target_df["V Mag"].astype(float)
+    target_names_all = list(target_df.index)
+    target_df = target_df.sort_values(by=['Obs. Frac.', "V Mag"], ascending = [False, True]) # sort table by observability and brightness
+    target_df = target_df.round(2)
+    target_df.insert(0, "ID", range(1, len(target_df) + 1))
 
-    # user input for how many objects to display in printed tables
-    display_N = 20
-    print("How many objects would you like displayed? (Sorted by most observable, hit ENTER for default of 20, maximum is 130.)")
+    types = list(set(target_df["Type"]))
+    types = [" " + item for item in types]
+    print("Is/are there a particular type(s) of object you would like to look at? The options are:\n")
+    print(",".join([i for i in types]))
+    print("\nPlease enter the type(s) of the objects you would like to observe, separated by commas (if multiple). Hit ENTER to observe all listed types.")
     var = input()
-    if var != "":
-        display_N  = int(var)
+    if var == "exit":
+            sys.exit()
+    if var!= "":
+        var = var.split(",")
+        target_df = target_df[target_df["Type"].isin(var)]
+        subtypes = list(set(target_df["Subtype"]))
+        subtypes = [" " + item for item in subtypes]
+        print("Is there a specific subtype of object you would like to look at? The options are:\n")
+        print(",".join([i for i in subtypes]))
+        print("\nPlease enter the subtype(s) of object you would like to observe, separated by commas (if multiple). Hit ENTER to observe all listed subtypes.")
+        subvar = input()
+        if subvar == "exit":
+            sys.exit()
+        if subvar != "":
+            subvar = subvar.split(",")
+            target_df = target_df[target_df["Subtype"].isin(subvar)]
+
+    display_N = len(target_df.index)
+
+    if display_N >= 20:
+        # user input for how many objects to display in printed tables
+        display_N = 20
+        print("How many objects would you like displayed? (Sorted by most observable, hit ENTER for default of 20. Maximum is %d)"%(len(target_df.index)))
+        var = input()
+        if var == "exit":
+            sys.exit()
+        if var != "":
+            display_N  = int(var)
+
+    target_df = target_df[:display_N]
+    target_names_ordered = list(target_df.index)
+    ids_ordered = list(target_df['ID'])
     
     # convert time array back to EST
     time_est = [t.datetime - datetime.timedelta(hours=4) for t in time_grid]
@@ -236,14 +274,12 @@ def sim_kirkwood_obs(date = str(date.today()), start_time = str(datetime.datetim
     
     # make dataframe for observing schedule
     time_df = pd.DataFrame(total_obs, columns = time_labels)
-    time_df = time_df.replace([0, 1], [Fore.RED + "no"  + Fore.RESET, Fore.GREEN + 'YES' + Fore.RESET]) # add color
-    time_df.insert(0, "Name", target_names_ordered)
+    time_df.insert(0, "Name", target_names_all)
     time_df = time_df.set_index("Name")
-    time_df = time_df.reindex(target_df.index) # sort objects to be in same order as other table
-    
-    # add ID numbers to objects
-    target_df.insert(0, "ID", range(1, len(target_df) + 1))
-    time_df.insert(0, "ID", range(1, len(time_df) + 1))
+    time_df = time_df[time_df.index.isin(target_names_ordered)]
+    time_df = time_df.reindex(target_names_ordered) # sort objects to be in same order as other table
+    time_df = time_df.replace([0, 1], [Fore.RED + "no"  + Fore.RESET, Fore.GREEN + 'YES' + Fore.RESET]) # add color
+    time_df.insert(0, "ID", ids_ordered)
 
     # display information table
     print(tabulate(target_df[:display_N], headers = 'keys', tablefmt = 'psql'))
@@ -251,84 +287,97 @@ def sim_kirkwood_obs(date = str(date.today()), start_time = str(datetime.datetim
     # display schedule
     print(tabulate(time_df[:display_N], headers = 'keys', tablefmt = 'psql'))
 
-
     # user input for which object IDs they want to observe
-    print("Please enter the IDs (integers) of the objects you would like to observe, separated by commas. Hit ENTER to observe all listed objects.")
+    print("\nWould you like to generate infromation/schedule files for select objects? Type 'yes' or press ENTER to exit the program):")
+    var = input()
+    if var == "" or var == "exit":
+        sys.exit()
+    if var == "yes":
+        print("Please enter the IDs of the objects you would like to observe, separated by commas. Hit ENTER to observe all listed objects.")
 
-    ids = input()
+        ids = input()
+        if ids == "exit":
+            sys.exit()
 
-    print("Generating files...")
+        print("Generating files...")
 
-    if ids == "":
-        ids = list(range(1, display_N + 1))
-    else:
-        ids = ids.split(","); ids = [int(i) for i in ids]
+        if ids == "":
+            ids = list(range(1, display_N + 1))
+        else:
+            ids = ids.split(","); ids = [int(i) for i in ids]
     
-    # limit info and schedule dataframes only to selected objects
-    selected_target_df = target_df.loc[target_df['ID'].isin(ids)]
-    selected_names = list(selected_target_df.index) # names of selected objects
-    selected_time_df = time_df.loc[time_df['ID'].isin(ids)]
-    selected_time_df = selected_time_df.replace([Fore.RED + "no"  + Fore.RESET, Fore.GREEN + 'YES' + Fore.RESET], ["no", "YES"])
+        # limit info and schedule dataframes only to selected objects
+        selected_target_df = target_df.loc[target_df['ID'].isin(ids)]
+        selected_names = list(selected_target_df.index) # names of selected objects
+        selected_time_df = time_df.loc[time_df['ID'].isin(ids)]
+        selected_time_df = selected_time_df.replace([Fore.RED + "no"  + Fore.RESET, Fore.GREEN + 'YES' + Fore.RESET], ["no", "YES"])
     
-    # remake astroplan targets for selected objects
-    selected_target_df_pos = selected_target_df[["RA", "Dec"]]
-    selected_target_df_pos.reset_index(inplace=True)
-    selected_target_table = Table.from_pandas(selected_target_df_pos)
-    selected_targets = [FixedTarget(coord=SkyCoord(ra=ra*u.deg, dec=dec*u.deg), name=name) for name, ra, dec in selected_target_table]
+        # remake astroplan targets for selected objects
+        selected_target_df_pos = selected_target_df[["RA", "Dec"]]
+        selected_target_df_pos.reset_index(inplace=True)
+        selected_target_table = Table.from_pandas(selected_target_df_pos)
+        selected_targets = [FixedTarget(coord=SkyCoord(ra=ra*u.deg, dec=dec*u.deg), name=name) for name, ra, dec in selected_target_table]
 
-    # create directories for output files
-    dir = "output"
-    os.makedirs(dir, exist_ok=True)
-    subdir = dir + "/" + str(datetime.datetime.now()).split(" ")[0] + "_" + str(datetime.datetime.now()).split(" ")[1][:8].replace(":", ".")
-    os.makedirs(subdir, exist_ok = True)
+        # create directories for output files
+        dir = "output"
+        os.makedirs(dir, exist_ok=True)
+        subdir = dir + "/" + str(datetime.datetime.now()).split(" ")[0] + "_" + str(datetime.datetime.now()).split(" ")[1][:8].replace(":", ".")
+        os.makedirs(subdir, exist_ok = True)
 
     # loop over targets and calcluate alt and az for each time interval during the night
-    for i in range(len(selected_targets)):
-        alt, az = [], []
-        for t in time_grid:
-            t = Time(t.datetime)
-            alt.append(kirkwood.altaz(t, selected_targets[i]).alt.value)
-            az.append(kirkwood.altaz(t, selected_targets[i]).az.value)
-        obj = selected_names[i]
-        target_info = selected_target_df.loc[obj]
-        target_time = selected_time_df.loc[obj]
-        target_info = target_info.drop(labels=["ID"]) # final info for selected object
-        target_time = target_time.drop(labels=["ID"])
-        target_obs = list(target_time)
-        target_time = pd.DataFrame([time_labels, target_obs, alt, az])
-        target_time = target_time.T
-        target_time.columns = ["Time", "Observable", "Alt", 'Az']
-        target_time = target_time.set_index("Time") # final schedule (and alt/az) for selected object
-        # replace whitespace with _
-        obj = obj.replace(" ", "_")
-        # write info/schedule files for each object and save
-        filename = obj+"_summary.txt"
-        filename = filename.replace("__", "_") # get rid of any double underscores
-        filename = filename.replace("___", "_") # and triple underscores (should not exist)
+        for i in range(len(selected_targets)):
+            alt, az = [], []
+            for t in time_grid:
+                t = Time(t.datetime)
+                alt.append(kirkwood.altaz(t, selected_targets[i]).alt.value)
+                az.append(kirkwood.altaz(t, selected_targets[i]).az.value)
+            obj = selected_names[i]
+            target_info = selected_target_df.loc[obj]
+            target_time = selected_time_df.loc[obj]
+            #target_info = target_info.drop(labels=["ID"]) # final info for selected object
+            target_time = target_time.drop(labels=["ID"])
+            target_obs = list(target_time)
+            target_time = pd.DataFrame([time_labels, target_obs, alt, az])
+            target_time = target_time.T
+            target_time.columns = ["Time", "Observable", "Alt", 'Az']
+            target_time = target_time.set_index("Time") # final schedule (and alt/az) for selected object
+
+            # write info/schedule files for each object and save
+            filename = obj+"_summary.txt"
                     
-        with open(subdir + "/" + filename, 'w') as f:
-            f.write(target_info.to_string() + "\n" + "\n")
-            f.write(target_time.to_string())
-    print("Info and schedule for selected objects saved as text files in " + subdir)
+            with open(subdir + "/" + filename, 'w') as f:
+                f.write(target_info.to_string() + "\n" + "\n")
+                f.write(target_time.to_string())
+                print("Info and schedule for selected objects saved as text files in " + subdir)
+    # plotting
+        print("\nWould you like to create sky charts for your observing run? Type 'yes' or press ENTER to exit the program:")
+        var = input()
+        if var == "":
+            sys.exit()
+        if var == "yes":
+            plotting.plot_it(subdir)
 
     # write and save log file
-    with open(subdir + "/" + "log", 'w') as f:
-        f.write("Date/Time:" + " " + str(datetime.datetime.now()) + "\n" + "\n")
+        print("\nWould you like to save a log file? Type 'yes' or press ENTER to exit the program:")
+        var = input()
+        if var == "":
+            sys.exit()
+        if var == "yes":
+            with open(subdir + "/" + "log", 'w') as f:
+                f.write("Date/Time:" + " " + str(datetime.datetime.now()) + "\n" + "\n")
+                f.write("Desired Date: " + str(date) + "\n")
+                f.write("Desired Start Time: " + str(start_time) + "\n")
+                f.write("Duration (hrs): " + str(duration) + "\n")
+                f.write("Altitude Range (deg): " + str(alt_lim[0]) + " to " + str(alt_lim[1]) + "\n")
+                f.write("Minimum Moon Separation (deg): " + str(moon_sep) + "\n")
+                f.write("Maximum Airmass: " + str(max_airmass) + "\n")
+                f.write("Twilight Convention: " + str(night_type) + "\n")
+                f.write("Lunar Illumination: " + str(moon_illum) + "\n")
+                f.write("Time Partition (hrs): " + str(dt) + "\n" + "\n")
+                f.write(str(len(selected_targets)) + " objects selected for observation: \n")
+                for obj in selected_names:
+                    f.write(obj + "\n")
 
-        f.write("Desired Date: " + str(date) + "\n")
-        f.write("Desired Start Time: " + str(start_time) + "\n")
-        f.write("Duration (hrs): " + str(duration) + "\n")
-        f.write("Altitude Range (deg): " + str(alt_lim[0]) + " to " + str(alt_lim[1]) + "\n")
-        f.write("Minimum Moon Separation (deg): " + str(moon_sep) + "\n")
-        f.write("Maximum Airmass: " + str(max_airmass) + "\n")
-        f.write("Twilight Convention: " + str(night_type) + "\n")
-        f.write("Lunar Illumination: " + str(moon_illum) + "\n")
-        f.write("Time Partition (hrs): " + str(dt) + "\n" + "\n")
-        f.write(str(len(selected_targets)) + " objects selected for observation: \n")
-        for obj in selected_names:
-            f.write(obj + "\n")
-
-    print("Log file saved in " + subdir)
+                print("Log file saved in " + subdir)
 
     return target_df, time_df
-

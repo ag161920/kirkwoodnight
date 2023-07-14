@@ -2,10 +2,11 @@ import kirkwoodnight
 from kirkwoodnight import source
 import datetime
 from datetime import date
+import sys
 
 def_l = [str(date.today()), str(datetime.datetime.now().time()), 4, 20, 85, 5, None, None, None, 0.5]
 
-message_list = ["Welcome! Type 'finish' at any point to accept defaults for all remaining settings, and type 'restart' at any point to begin from scatch. (hit ENTER to begin)",
+message_list = ["Welcome! Until the 'Generating Files...' message, type 'finish' at any point to accept defaults for all remaining settings and constraints, or type 'restart' at any point to begin from scatch. You may also type 'exit' at any point to leave the program. \nHit ENTER to begin:\n",
                 "Which date would you like to observe on? (Enter as YYYY-MM-DD, default is today):",
                 "What time would you like to start your run? (Enter in military time as HH:MM, default is current local time):",
                 "How many hours would you like to observe for? (default is 4)",
@@ -26,11 +27,14 @@ def input_loop(def_l):
         print(message_list[i])
         var = input()
         finished = False
+        if var == "exit":
+            sys.exit()
         if var == "finish":
             print('Defaults selected for remaining settings.')
             finished = True
             return finished
         elif var == "restart":
+            print()
             finished = input_loop(def_l)
             if finished:
                 return finished
@@ -50,7 +54,8 @@ def main():
     print("ACCESSED ON %s"%str(datetime.datetime.now()))
     print("------------------------------------------------------------------------")
 
-    print("\n For best results, maximize terminal to fullscreen. \n")
+    print("\n For best results, maximize terminal to fullscreen.")
+    print(" It is also reccomended to use this program in its own dedicated directory.\n")
     input_loop(def_l)
     # for i in range(len(def_l)):
     #     print(message_list[i])
