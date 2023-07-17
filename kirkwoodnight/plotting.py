@@ -138,5 +138,5 @@ def plot_it(files_path):
             
         ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05), ncol=5, facecolor='white', edgecolor='white', fontsize=12)
         plt.title('Time:'+time,color='k')
-        fig.savefig(files_path+time+'.png',dpi=300,bbox_inches='tight')
+        fig.savefig(files_path+"/"+time+'.png',dpi=300,bbox_inches='tight')
  
